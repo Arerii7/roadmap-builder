@@ -26,12 +26,40 @@ A web application for visualizing roadmap projects with multiple view modes.
 
 👉 **https://arerii7.github.io/roadmap-builder/**
 
-## Quick Start (Local)
+## How to Run
+
+### 1. Open directly (simplest)
 
 ```bash
 git clone https://github.com/Arerii7/roadmap-builder.git
 cd roadmap-builder
-# Open index.html in your browser
+# Double-click index.html or drag it into browser
+```
+
+### 2. Python server (recommended)
+
+```bash
+python3 -m http.server 8000
+# Open http://localhost:8000
+```
+
+### 3. Node.js server
+
+```bash
+npx serve .
+# Open http://localhost:3000
+```
+
+### 4. VS Code Live Server
+
+- Install "Live Server" extension
+- Right-click `index.html` → "Open with Live Server"
+
+### 5. Docker
+
+```bash
+docker run -p 8080:80 -v $(pwd):/usr/share/nginx/html nginx:alpine
+# Open http://localhost:8080
 ```
 
 ## ⌨️ Keyboard Shortcuts
