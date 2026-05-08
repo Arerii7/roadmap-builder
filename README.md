@@ -1,45 +1,45 @@
 # 🗺️ Road-Map Builder
 
-Веб-приложение для визуализации roadmap-проектов с множественными режимами отображения.
+A web application for visualizing roadmap projects with multiple view modes.
 
 ![Preview](https://via.placeholder.com/800x400/1a1a2e/6366f1?text=Road-Map+Builder)
 
-## ✨ Возможности
+## ✨ Features
 
-| Категория | Функции |
-|-----------|---------|
-| **Режимы** | Tree • Timeline • Kanban • Gantt • Calendar |
-| **Задачи** | Подзадачи, теги, прогресс (0-100%), приоритеты |
-| **Инструменты** | Drag-n-drop, фильтры, поиск, undo/redo |
-| **Экспорт** | JSON, PNG |
+| Category | Functions |
+|----------|-----------|
+| **Views** | Tree • Timeline • Kanban • Gantt • Calendar |
+| **Tasks** | Subtasks, tags, progress (0-100%), priorities |
+| **Tools** | Drag-n-drop, filters, search, undo/redo |
+| **Export** | JSON, PNG |
 
-### Дополнительно
-- 🌙 Тёмная/светлая тема
-- 🌐 Русский/английский язык
-- ⌨️ Горячие клавиши
-- 💾 Автосохранение в localStorage
+### Additional
+- 🌙 Dark/Light theme
+- 🌐 Russian/English language
+- ⌨️ Keyboard shortcuts
+- 💾 Auto-save to localStorage
 
-## 🚀 Быстрый старт
+## 🚀 Quick Start
 
 ```bash
 git clone https://github.com/Arerii7/roadmap-builder.git
 cd roadmap-builder
-# Откройте index.html в браузере
+# Open index.html in your browser
 ```
 
-## ⌨️ Клавиши
+## ⌨️ Keyboard Shortcuts
 
-| Клав | Действие |
-|------|----------|
-| `Del` | Удалить |
-| `Esc` | Закрыть |
-| `Ctrl+N` | Новая |
-| `Ctrl+S` | Экспорт |
-| `Ctrl+Z/Y` | Отмена/возврат |
-| `Ctrl+колёсо` | Zoom |
+| Key | Action |
+|-----|--------|
+| `Del` | Delete |
+| `Esc` | Close |
+| `Ctrl+N` | New task |
+| `Ctrl+S` | Export |
+| `Ctrl+Z/Y` | Undo/Redo |
+| `Ctrl+scroll` | Zoom |
 | `Shift+drag` | Pan |
 
-## 🛠 Технологии
+## 🛠 Tech Stack
 
 Pure JS • HTML5 • CSS3 • LocalStorage
 
