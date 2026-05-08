@@ -4,6 +4,8 @@ const ZOOM_STORAGE_KEY = 'roadmap-zoom';
 const THEME_KEY = 'roadmap-theme';
 const LANG_KEY = 'roadmap-lang';
 const UI_STATE_KEY = 'roadmap-ui-state';
+const PROJECTS_KEY = 'roadmap-projects';
+const ACTIVE_PROJECT_KEY = 'roadmap-active-project';
 
 const translations = {
   ru: {
@@ -43,7 +45,15 @@ const translations = {
     kanban: 'Канбан',
     gantt: 'Ганта',
     calendar: 'Календарь',
-    noDates: 'Нет задач с датами'
+    noDates: 'Нет задач с датами',
+    projects: 'Проекты',
+    newProject: 'Новый проект',
+    editProject: 'Редактировать проект',
+    deleteProject: 'Удалить проект',
+    projectName: 'Название проекта',
+    deleteProjectConfirm: 'Удалить проект? Все задачи будут удалены.',
+    cannotDeleteLast: 'Нельзя удалить последний проект',
+    defaultProject: 'Мой проект'
   },
   en: {
     add: 'Add',
@@ -82,13 +92,23 @@ const translations = {
     kanban: 'Kanban',
     gantt: 'Gantt',
     calendar: 'Calendar',
-    noDates: 'No tasks with dates'
+    noDates: 'No tasks with dates',
+    projects: 'Projects',
+    newProject: 'New Project',
+    editProject: 'Edit Project',
+    deleteProject: 'Delete Project',
+    projectName: 'Project Name',
+    deleteProjectConfirm: 'Delete project? All tasks will be removed.',
+    cannotDeleteLast: 'Cannot delete the last project',
+    defaultProject: 'My Project'
   }
 };
 
 const state = {
   nodes: [],
   todos: [],
+  projects: [],
+  activeProjectId: null,
   selectedNodeId: null,
   currentView: 'tree',
   dragging: null,
@@ -158,6 +178,185 @@ function generateId() {
   return Date.now().toString(36) + Math.random().toString(36).substr(2);
 }
 
+function createProject(name) {
+  return {
+    id: generateId(),
+    name: name || t('defaultProject'),
+    created: new Date().toISOString(),
+    nodes: [],
+    todos: []
+  };
+}
+
+function loadProjects() {
+  const data = localStorage.getItem(PROJECTS_KEY);
+  if (data) {
+    try {
+      const parsed = JSON.parse(data);
+      state.projects = parsed.projects || [];
+      state.activeProjectId = parsed.activeProjectId || null;
+    } catch (e) {
+      state.projects = [];
+    }
+  }
+
+  if (state.projects.length === 0) {
+    const legacyNodes = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+    const legacyTodos = JSON.parse(localStorage.getItem(TODO_STORAGE_KEY) || '[]');
+    const project = createProject(t('defaultProject'));
+    project.nodes = legacyNodes;
+    project.todos = legacyTodos;
+    state.projects = [project];
+    state.activeProjectId = project.id;
+    saveProjects();
+  }
+
+  if (!state.activeProjectId || !state.projects.find(p => p.id === state.activeProjectId)) {
+    state.activeProjectId = state.projects[0]?.id || null;
+  }
+
+  loadActiveProject();
+}
+
+function saveProjects() {
+  const data = {
+    projects: state.projects,
+    activeProjectId: state.activeProjectId
+  };
+  localStorage.setItem(PROJECTS_KEY, JSON.stringify(data));
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(getActiveProject()?.nodes || []));
+  localStorage.setItem(TODO_STORAGE_KEY, JSON.stringify(getActiveProject()?.todos || []));
+}
+
+function getActiveProject() {
+  return state.projects.find(p => p.id === state.activeProjectId);
+}
+
+function loadActiveProject() {
+  const project = getActiveProject();
+  if (project) {
+    state.nodes = project.nodes || [];
+    state.todos = project.todos || [];
+  } else {
+    state.nodes = [];
+    state.todos = [];
+  }
+  renderAll();
+}
+
+function switchProject(projectId) {
+  const project = state.projects.find(p => p.id === projectId);
+  if (project) {
+    state.activeProjectId = projectId;
+    loadActiveProject();
+    saveProjects();
+    updateProjectDropdown();
+  }
+}
+
+function addProject(name) {
+  const project = createProject(name);
+  state.projects.push(project);
+  state.activeProjectId = project.id;
+  loadActiveProject();
+  saveProjects();
+  updateProjectDropdown();
+  return project;
+}
+
+function updateProject(projectId, name) {
+  const project = state.projects.find(p => p.id === projectId);
+  if (project) {
+    project.name = name;
+    saveProjects();
+    updateProjectDropdown();
+  }
+}
+
+function deleteProject(projectId) {
+  if (state.projects.length <= 1) {
+    alert(t('cannotDeleteLast'));
+    return;
+  }
+  if (!confirm(t('deleteProjectConfirm'))) return;
+  state.projects = state.projects.filter(p => p.id !== projectId);
+  if (state.activeProjectId === projectId) {
+    state.activeProjectId = state.projects[0]?.id || null;
+  }
+  loadActiveProject();
+  saveProjects();
+  updateProjectDropdown();
+}
+
+function initProjectDropdown() {
+  const dropdownBtn = document.getElementById('projectDropdownBtn');
+  const dropdown = document.getElementById('projectDropdown');
+
+  dropdownBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    dropdown.classList.toggle('active');
+  });
+
+  document.addEventListener('click', () => {
+    dropdown.classList.remove('active');
+  });
+
+  document.getElementById('newProjectBtn').addEventListener('click', () => {
+    const name = prompt(t('projectName'), '');
+    if (name && name.trim()) {
+      addProject(name.trim());
+    }
+  });
+
+  updateProjectDropdown();
+}
+
+function updateProjectDropdown() {
+  const projectList = document.getElementById('projectList');
+  const currentProjectName = document.getElementById('currentProjectName');
+  const activeProject = getActiveProject();
+
+  currentProjectName.textContent = activeProject?.name || t('defaultProject');
+
+  projectList.innerHTML = state.projects.map(project => `
+    <div class="project-item ${project.id === state.activeProjectId ? 'active' : ''}"
+         data-id="${project.id}">
+      <span class="project-item-name">${escapeHtml(project.name)}</span>
+      <div class="project-item-actions">
+        <button class="project-item-btn" title="${t('editProject')}"
+                onclick="event.stopPropagation(); editProject('${project.id}')">
+          <svg viewBox="0 0 24 24" width="14" height="14"><path fill="currentColor" d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
+        </button>
+        <button class="project-item-btn" title="${t('deleteProject')}"
+                onclick="event.stopPropagation(); deleteProject('${project.id}')">
+          <svg viewBox="0 0 24 24" width="14" height="14"><path fill="currentColor" d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
+        </button>
+      </div>
+    </div>
+  `).join('');
+
+  projectList.querySelectorAll('.project-item').forEach(item => {
+    item.addEventListener('click', () => {
+      switchProject(item.dataset.id);
+    });
+  });
+}
+
+function editProject(projectId) {
+  const project = state.projects.find(p => p.id === projectId);
+  if (!project) return;
+  const name = prompt(t('projectName'), project.name);
+  if (name && name.trim()) {
+    updateProject(projectId, name.trim());
+  }
+}
+
+function escapeHtml(text) {
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}
+
 function loadFromStorage() {
   const data = localStorage.getItem(STORAGE_KEY);
   if (data) {
@@ -195,12 +394,20 @@ function loadFromStorage() {
 function saveToStorage() {
   clearTimeout(saveTimeout);
   saveTimeout = setTimeout(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(state.nodes));
+    const project = getActiveProject();
+    if (project) {
+      project.nodes = state.nodes;
+      saveProjects();
+    }
   }, 100);
 }
 
 function saveTodos() {
-  localStorage.setItem(TODO_STORAGE_KEY, JSON.stringify(state.todos));
+  const project = getActiveProject();
+  if (project) {
+    project.todos = state.todos;
+    saveProjects();
+  }
 }
 
 function saveZoom() {
@@ -1349,9 +1556,11 @@ document.addEventListener('DOMContentLoaded', () => {
   loadTheme();
   loadLang();
   loadUIState();
-  loadFromStorage();
+  loadProjects();
+  loadZoom();
   pushHistory();
   applyTranslations();
+  initProjectDropdown();
 
   document.querySelectorAll('.view-btn').forEach(btn => {
     btn.addEventListener('click', () => switchView(btn.dataset.view));

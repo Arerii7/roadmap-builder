@@ -1,5 +1,126 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
+.project-selector {
+  position: relative;
+  margin-right: 16px;
+}
+
+.project-dropdown-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text-primary);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.project-dropdown-btn:hover {
+  background: var(--bg-tertiary);
+  border-color: var(--accent);
+}
+
+.project-dropdown {
+  display: none;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  margin-top: 4px;
+  min-width: 220px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: 0 8px 24px var(--shadow);
+  z-index: 1000;
+  overflow: hidden;
+}
+
+.project-dropdown.active {
+  display: block;
+}
+
+.project-list {
+  max-height: 240px;
+  overflow-y: auto;
+  padding: 4px;
+}
+
+.project-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  color: var(--text-primary);
+  font-size: 13px;
+  transition: background 0.15s;
+}
+
+.project-item:hover {
+  background: var(--bg-tertiary);
+}
+
+.project-item.active {
+  background: var(--accent);
+  color: white;
+}
+
+.project-item-name {
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.project-item-actions {
+  display: none;
+  gap: 4px;
+}
+
+.project-item:hover .project-item-actions {
+  display: flex;
+}
+
+.project-item.active .project-item-actions {
+  display: flex;
+}
+
+.project-item-btn {
+  padding: 4px;
+  background: transparent;
+  border: none;
+  color: inherit;
+  cursor: pointer;
+  border-radius: 4px;
+  opacity: 0.7;
+}
+
+.project-item-btn:hover {
+  background: rgba(255,255,255,0.2);
+  opacity: 1;
+}
+
+.project-actions {
+  padding: 8px;
+  border-top: 1px solid var(--border);
+}
+
+.project-actions .btn {
+  width: 100%;
+  justify-content: center;
+}
+
+.btn-small {
+  padding: 6px 12px;
+  font-size: 12px;
+}
+
 :root {
   --bg-primary: #1a1a2e;
   --bg-secondary: #16213e;

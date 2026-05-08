@@ -14,7 +14,21 @@
   <div id="app">
     <header class="toolbar">
       <div class="toolbar-left">
-        <h1 class="logo">Road-Map Builder</h1>
+        <div class="project-selector">
+          <button class="project-dropdown-btn" id="projectDropdownBtn">
+            <span id="currentProjectName">Мой проект</span>
+            <svg viewBox="0 0 24 24" width="16" height="16"><path fill="currentColor" d="M7 10l5 5 5-5z"/></svg>
+          </button>
+          <div class="project-dropdown" id="projectDropdown">
+            <div class="project-list" id="projectList"></div>
+            <div class="project-actions">
+              <button class="btn btn-small" id="newProjectBtn">
+                <svg viewBox="0 0 24 24" width="14" height="14"><path fill="currentColor" d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+                <span data-i18n="newProject">Новый проект</span>
+              </button>
+            </div>
+          </div>
+        </div>
         <div class="view-switcher">
           <button class="view-btn active" data-view="tree" title="Древовидный вид">
             <svg viewBox="0 0 24 24" width="20" height="20"><path fill="currentColor" d="M12 2L2 7v10l10 5 10-5V7L12 2zm0 2.18l6.9 3.45L12 11.09 5.1 7.63 12 4.18zM4 8.82l7 3.5v7.36l-7-3.5V8.82zm9 10.86v-7.36l7-3.5v7.36l-7 3.5z"/></svg>

@@ -12,6 +12,7 @@ A web application for visualizing roadmap projects with multiple view modes.
 | Category | Functions |
 |----------|-----------|
 | **Views** | Tree • Timeline • Kanban • Gantt • Calendar |
+| **Projects** | Multiple projects, switch, rename, delete |
 | **Tasks** | Subtasks, tags, progress (0-100%), priorities |
 | **Tools** | Drag-n-drop, filters, search, undo/redo |
 | **Export** | JSON, PNG |
