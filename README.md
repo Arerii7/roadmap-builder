@@ -1,5 +1,8 @@
 # 🗺️ Road-Map Builder
 
+[![Deploy](https://github.com/Arerii7/roadmap-builder/actions/workflows/deploy.yml/badge.svg)](https://arerii7.github.io/roadmap-builder/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
 A web application for visualizing roadmap projects with multiple view modes.
 
 ![Preview](screenshot.svg)
