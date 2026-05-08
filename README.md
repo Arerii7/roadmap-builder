@@ -2,7 +2,7 @@
 
 A web application for visualizing roadmap projects with multiple view modes.
 
-![Preview](https://via.placeholder.com/800x400/1a1a2e/6366f1?text=Road-Map+Builder)
+![Preview](screenshot.svg)
 
 ## ✨ Features
 
