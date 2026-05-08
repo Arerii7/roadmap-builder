@@ -3,6 +3,7 @@ const TODO_STORAGE_KEY = 'roadmap-todos';
 const ZOOM_STORAGE_KEY = 'roadmap-zoom';
 const THEME_KEY = 'roadmap-theme';
 const LANG_KEY = 'roadmap-lang';
+const UI_STATE_KEY = 'roadmap-ui-state';
 
 const translations = {
   ru: {
@@ -105,7 +106,8 @@ const state = {
   historyIndex: -1,
   contextMenuNode: null,
   theme: 'dark',
-  lang: 'ru'
+  lang: 'ru',
+  todoPanelVisible: false
 };
 
 let saveTimeout = null;
@@ -1286,7 +1288,26 @@ function addTodo() {
 
 function toggleTodoPanel() {
   const panel = document.getElementById('todoPanel');
-  panel.classList.toggle('hidden');
+  state.todoPanelVisible = !state.todoPanelVisible;
+  panel.classList.toggle('hidden', !state.todoPanelVisible);
+  saveUIState();
+}
+
+function saveUIState() {
+  localStorage.setItem(UI_STATE_KEY, JSON.stringify({ todoPanelVisible: state.todoPanelVisible }));
+}
+
+function loadUIState() {
+  const saved = localStorage.getItem(UI_STATE_KEY);
+  if (saved) {
+    try {
+      const data = JSON.parse(saved);
+      state.todoPanelVisible = data.todoPanelVisible || false;
+      if (!state.todoPanelVisible) {
+        document.getElementById('todoPanel').classList.add('hidden');
+      }
+    } catch (e) {}
+  }
 }
 
 function handleKeyboard(e) {
@@ -1327,6 +1348,7 @@ function handleKeyboard(e) {
 document.addEventListener('DOMContentLoaded', () => {
   loadTheme();
   loadLang();
+  loadUIState();
   loadFromStorage();
   pushHistory();
   applyTranslations();
