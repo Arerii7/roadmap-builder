@@ -19,7 +19,11 @@ A web application for visualizing roadmap projects with multiple view modes.
 - ⌨️ Keyboard shortcuts
 - 💾 Auto-save to localStorage
 
-## 🚀 Quick Start
+## 🚀 Live Demo
+
+👉 **https://arerii7.github.io/roadmap-builder/**
+
+## Quick Start (Local)
 
 ```bash
 git clone https://github.com/Arerii7/roadmap-builder.git
