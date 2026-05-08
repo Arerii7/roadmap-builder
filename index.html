@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Road-Map Builder</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="app">
+    <header class="toolbar">
+      <div class="toolbar-left">
+        <h1 class="logo">Road-Map Builder</h1>
+        <div class="view-switcher">
+          <button class="view-btn active" data-view="tree" title="Древовидный вид">
+            <svg viewBox="0 0 24 24" width="20" height="20"><path fill="currentColor" d="M12 2L2 7v10l10 5 10-5V7L12 2zm0 2.18l6.9 3.45L12 11.09 5.1 7.63 12 4.18zM4 8.82l7 3.5v7.36l-7-3.5V8.82zm9 10.86v-7.36l7-3.5v7.36l-7 3.5z"/></svg>
+          </button>
+          <button class="view-btn" data-view="timeline" title="Временная шкала">
+            <svg viewBox="0 0 24 24" width="20" height="20"><path fill="currentColor" d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14zM7 12h2v5H7zm4-3h2v8h-2zm4-3h2v11h-2z"/></svg>
+          </button>
+          <button class="view-btn" data-view="kanban" title="Канбан доска">
+            <svg viewBox="0 0 24 24" width="20" height="20"><path fill="currentColor" d="M3 3h6v18H3V3zm12 0h6v18h-6V3zm-6 6h6v12H9V9z"/></svg>
+          </button>
+          <button class="view-btn" data-view="gantt" title="Диаграмма Ганта">
+            <svg viewBox="0 0 24 24" width="20" height="20"><path fill="currentColor" d="M3 5h18v2H3V5zm0 6h12v2H3v-2zm0 6h18v2H3v-2zm0 6h12v2H3v-2z"/></svg>
+          </button>
+          <button class="view-btn" data-view="calendar" title="Календарь">
+            <svg viewBox="0 0 24 24" width="20" height="20"><path fill="currentColor" d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10z"/></svg>
+          </button>
+        </div>
+        <div class="zoom-controls">
+          <button class="zoom-btn" id="zoomIn" title="Увеличить">+</button>
+          <button class="zoom-btn" id="zoomOut" title="Уменьшить">−</button>
+          <button class="zoom-btn" id="zoomReset" title="Сбросить">⟲</button>
+        </div>
+      </div>
+      <div class="toolbar-right">
+        <button class="btn btn-icon" id="undoBtn" title="Отменить (Ctrl+Z)">↶</button>
+        <button class="btn btn-icon" id="redoBtn" title="Вернуть (Ctrl+Y)">↷</button>
+        <button class="btn" id="addNodeBtn" title="Добавить задачу">
+          <svg viewBox="0 0 24 24" width="16" height="16"><path fill="currentColor" d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+          Добавить
+        </button>
+        <button class="btn btn-secondary" id="exportJsonBtn" title="Экспорт JSON">JSON</button>
+        <button class="btn btn-secondary" id="exportPngBtn" title="Экспорт PNG">PNG</button>
+        <button class="btn btn-secondary" id="importJsonBtn" title="Импорт JSON">Импорт</button>
+        <input type="file" id="importFileInput" accept=".json" style="display:none">
+        <button class="btn btn-icon" id="toggleTodoPanel" title="TODO">☰</button>
+      </div>
+    </header>
+
+    <main class="main-content">
+      <aside class="sidebar">
+        <div class="sidebar-section">
+          <h3>Поиск</h3>
+          <div class="search-box">
+            <input type="text" id="searchInput" placeholder="Поиск задач...">
+          </div>
+          <div class="filter-row">
+            <select id="filterStatus">
+              <option value="">Все статусы</option>
+              <option value="idea">Идея</option>
+              <option value="in_progress">В работе</option>
+              <option value="done">Готово</option>
+            </select>
+            <select id="filterPriority">
+              <option value="">Все приоритеты</option>
+              <option value="low">Низкий</option>
+              <option value="medium">Средний</option>
+              <option value="high">Высокий</option>
+            </select>
+          </div>
+        </div>
+        <div class="sidebar-section">
+          <h3>Задачи</h3>
+          <div id="nodeList" class="node-list"></div>
+        </div>
+        <div class="sidebar-section">
+          <h3>Свойства</h3>
+          <div id="nodeProperties" class="properties-panel">
+            <p class="empty-state">Выберите задачу</p>
+          </div>
+        </div>
+      </aside>
+
+      <div class="canvas-container" id="canvasContainer">
+        <div id="canvas" class="canvas">
+          <div id="nodesContainer" class="nodes-container"></div>
+          <svg id="connectionsLayer" class="connections-layer"></svg>
+        </div>
+      </div>
+
+      <aside class="sidebar-right" id="todoPanel">
+        <div class="sidebar-section">
+          <div class="todo-header">
+            <h3>TODO</h3>
+            <button class="btn btn-small" id="addTodoBtn">+</button>
+          </div>
+          <div class="todo-input-row" id="todoInputRow" style="display:none">
+            <input type="text" id="todoInput" placeholder="Новая задача...">
+          </div>
+        </div>
+        <div class="sidebar-section">
+          <div id="todoList" class="todo-list"></div>
+        </div>
+      </aside>
+    </main>
+  </div>
+
+  <div id="modal" class="modal hidden">
+    <div class="modal-content">
+      <h2 id="modalTitle">Новая задача</h2>
+      <form id="nodeForm">
+        <input type="hidden" id="nodeId">
+        <div class="form-group">
+          <label for="nodeTitle">Название</label>
+          <input type="text" id="nodeTitle" required>
+        </div>
+        <div class="form-group">
+          <label for="nodeDescription">Описание</label>
+          <textarea id="nodeDescription" rows="3"></textarea>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="nodeStatus">Статус</label>
+            <select id="nodeStatus">
+              <option value="idea">Идея</option>
+              <option value="in_progress">В работе</option>
+              <option value="done">Готово</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="nodePriority">Приоритет</label>
+            <select id="nodePriority">
+              <option value="low">Низкий</option>
+              <option value="medium">Средний</option>
+              <option value="high">Высокий</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="nodeStartDate">Дата начала</label>
+            <input type="date" id="nodeStartDate">
+          </div>
+          <div class="form-group">
+            <label for="nodeEndDate">Дата окончания</label>
+            <input type="date" id="nodeEndDate">
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="nodeProgress">Прогресс (%)</label>
+          <input type="range" id="nodeProgress" min="0" max="100" value="0">
+          <span id="progressValue">0%</span>
+        </div>
+        <div class="form-group">
+          <label for="nodeTags">Теги</label>
+          <input type="text" id="nodeTags" placeholder="тег1, тег2, тег3">
+        </div>
+        <div class="form-group">
+          <label for="nodeParent">Родительская задача</label>
+          <select id="nodeParent">
+            <option value="">Нет</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Подзадачи</label>
+          <div id="subtasksList" class="subtasks-list"></div>
+          <button type="button" class="btn btn-small btn-secondary" id="addSubtaskBtn">+ Добавить подзадачу</button>
+        </div>
+        <div class="form-actions">
+          <button type="button" class="btn btn-secondary" id="cancelNodeBtn">Отмена</button>
+          <button type="submit" class="btn">Сохранить</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div id="contextMenu" class="context-menu hidden">
+    <div class="context-menu-item" data-action="edit">Изменить</div>
+    <div class="context-menu-item" data-action="duplicate">Дублировать</div>
+    <div class="context-menu-item" data-action="addChild">Добавить подзадачу</div>
+    <div class="context-menu-divider"></div>
+    <div class="context-menu-item context-menu-item-danger" data-action="delete">Удалить</div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
