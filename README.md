@@ -50,17 +50,17 @@ npx serve .
 # Open http://localhost:3000
 ```
 
-### 4. VS Code Live Server
+### 5. PHP (built-in)
+
+```bash
+php -S localhost:8000
+# Open http://localhost:8000
+```
 
 - Install "Live Server" extension
 - Right-click `index.html` → "Open with Live Server"
 
-### 5. Docker
 
-```bash
-docker run -p 8080:80 -v $(pwd):/usr/share/nginx/html nginx:alpine
-# Open http://localhost:8080
-```
 
 ## ⌨️ Keyboard Shortcuts
 
