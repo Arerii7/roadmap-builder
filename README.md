@@ -3,7 +3,7 @@
 [![Deploy](https://github.com/Arerii7/roadmap-builder/actions/workflows/deploy.yml/badge.svg)](https://arerii7.github.io/roadmap-builder/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-Веб-приложение для визуализации roadmap-проектов с несколькими режимами отображения. Создавайте задачи, управляйте проектами, стройте диаграммы — всё в одном месте.
+A web application for visualizing roadmap projects with multiple view modes. Create tasks, manage projects, build diagrams — all in one place.
 
 ![Preview](screenshot.svg)
 
@@ -76,11 +76,11 @@ Pure JS • HTML5 • CSS3 • LocalStorage
 
 ## 📋 TODO / Roadmap
 
-- [ ] Импорт/Экспорт (CSV, Markdown)
-- [ ] Плагины и система тем
-- [ ] Мобильная адаптация
-- [ ] PWA (офлайн-режим)
-- [ ] Зависимости между задачами
+- [ ] Import/Export (CSV, Markdown)
+- [ ] Plugins and themes system
+- [ ] Mobile adaptation
+- [ ] PWA (offline mode)
+- [ ] Task dependencies
 
 ## 📄 License
 
