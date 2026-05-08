@@ -3,7 +3,7 @@
 [![Deploy](https://github.com/Arerii7/roadmap-builder/actions/workflows/deploy.yml/badge.svg)](https://arerii7.github.io/roadmap-builder/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-A web application for visualizing roadmap projects with multiple view modes.
+Веб-приложение для визуализации roadmap-проектов с несколькими режимами отображения. Создавайте задачи, управляйте проектами, стройте диаграммы — всё в одном месте.
 
 ![Preview](screenshot.svg)
 
@@ -51,17 +51,12 @@ npx serve .
 # Open http://localhost:3000
 ```
 
-### 5. PHP (built-in)
+### 4. PHP (built-in)
 
 ```bash
 php -S localhost:8000
 # Open http://localhost:8000
 ```
-
-- Install "Live Server" extension
-- Right-click `index.html` → "Open with Live Server"
-
-
 
 ## ⌨️ Keyboard Shortcuts
 
@@ -78,6 +73,14 @@ php -S localhost:8000
 ## 🛠 Tech Stack
 
 Pure JS • HTML5 • CSS3 • LocalStorage
+
+## 📋 TODO / Roadmap
+
+- [ ] Импорт/Экспорт (CSV, Markdown)
+- [ ] Плагины и система тем
+- [ ] Мобильная адаптация
+- [ ] PWA (офлайн-режим)
+- [ ] Зависимости между задачами
 
 ## 📄 License
 
