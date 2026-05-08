@@ -1,6 +1,89 @@
 const STORAGE_KEY = 'roadmap-data';
 const TODO_STORAGE_KEY = 'roadmap-todos';
 const ZOOM_STORAGE_KEY = 'roadmap-zoom';
+const THEME_KEY = 'roadmap-theme';
+const LANG_KEY = 'roadmap-lang';
+
+const translations = {
+  ru: {
+    add: 'Добавить',
+    search: 'Поиск задач...',
+    allStatuses: 'Все статусы',
+    allPriorities: 'Все приоритеты',
+    idea: 'Идея',
+    inProgress: 'В работе',
+    done: 'Готово',
+    low: 'Низкий',
+    medium: 'Средний',
+    high: 'Высокий',
+    selectTask: 'Выберите задачу',
+    title: 'Название',
+    description: 'Описание',
+    status: 'Статус',
+    priority: 'Приоритет',
+    startDate: 'Дата начала',
+    endDate: 'Дата окончания',
+    progress: 'Прогресс (%)',
+    tags: 'Теги',
+    parent: 'Родительская задача',
+    subtasks: 'Подзадачи',
+    addSubtask: 'Добавить подзадачу',
+    cancel: 'Отмена',
+    save: 'Сохранить',
+    newTask: 'Новая задача',
+    editTask: 'Изменить задачу',
+    noParent: 'Нет',
+    todoTitle: 'TODO',
+    noTasks: 'Нет задач',
+    overdue: 'просрочено',
+    dueSoon: 'скоро',
+    tree: 'Древовидный',
+    timeline: 'Временная шкала',
+    kanban: 'Канбан',
+    gantt: 'Ганта',
+    calendar: 'Календарь',
+    noDates: 'Нет задач с датами'
+  },
+  en: {
+    add: 'Add',
+    search: 'Search tasks...',
+    allStatuses: 'All statuses',
+    allPriorities: 'All priorities',
+    idea: 'Idea',
+    inProgress: 'In Progress',
+    done: 'Done',
+    low: 'Low',
+    medium: 'Medium',
+    high: 'High',
+    selectTask: 'Select a task',
+    title: 'Title',
+    description: 'Description',
+    status: 'Status',
+    priority: 'Priority',
+    startDate: 'Start Date',
+    endDate: 'End Date',
+    progress: 'Progress (%)',
+    tags: 'Tags',
+    parent: 'Parent Task',
+    subtasks: 'Subtasks',
+    addSubtask: 'Add Subtask',
+    cancel: 'Cancel',
+    save: 'Save',
+    newTask: 'New Task',
+    editTask: 'Edit Task',
+    noParent: 'None',
+    todoTitle: 'TODO',
+    noTasks: 'No tasks',
+    overdue: 'overdue',
+    dueSoon: 'soon',
+    tree: 'Tree',
+    timeline: 'Timeline',
+    kanban: 'Kanban',
+    gantt: 'Gantt',
+    calendar: 'Calendar',
+    noDates: 'No tasks with dates'
+  }
+};
 
 const state = {
   nodes: [],
@@ -20,10 +103,54 @@ const state = {
   },
   history: [],
   historyIndex: -1,
-  contextMenuNode: null
+  contextMenuNode: null,
+  theme: 'dark',
+  lang: 'ru'
 };
 
 let saveTimeout = null;
+
+function t(key) {
+  return translations[state.lang][key] || key;
+}
+
+function applyTranslations() {
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.getAttribute('data-i18n');
+    el.textContent = t(key);
+  });
+  document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+    const key = el.getAttribute('data-i18n-placeholder');
+    el.placeholder = t(key);
+  });
+  renderAll();
+}
+
+function loadTheme() {
+  const saved = localStorage.getItem(THEME_KEY);
+  state.theme = saved || 'dark';
+  document.documentElement.setAttribute('data-theme', state.theme);
+}
+
+function saveTheme() {
+  localStorage.setItem(THEME_KEY, state.theme);
+}
+
+function toggleTheme() {
+  state.theme = state.theme === 'dark' ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', state.theme);
+  saveTheme();
+}
+
+function loadLang() {
+  const saved = localStorage.getItem(LANG_KEY);
+  state.lang = saved || 'ru';
+  document.getElementById('langSelect').value = state.lang;
+}
+
+function saveLang() {
+  localStorage.setItem(LANG_KEY, state.lang);
+}
 
 function generateId() {
   return Date.now().toString(36) + Math.random().toString(36).substr(2);
@@ -761,7 +888,7 @@ function updateCanvasTransform() {
 }
 
 function openAddModal() {
-  document.getElementById('modalTitle').textContent = 'Новая задача';
+  document.getElementById('modalTitle').textContent = t('newTask');
   document.getElementById('nodeForm').reset();
   document.getElementById('nodeId').value = '';
   document.getElementById('progressValue').textContent = '0%';
@@ -774,7 +901,7 @@ function openEditModal(id) {
   const node = getNodeById(id);
   if (!node) return;
 
-  document.getElementById('modalTitle').textContent = 'Изменить задачу';
+  document.getElementById('modalTitle').textContent = t('editTask');
   document.getElementById('nodeId').value = node.id;
   document.getElementById('nodeTitle').value = node.title;
   document.getElementById('nodeDescription').value = node.description;
@@ -802,7 +929,7 @@ function populateParentSelect(excludeId = null) {
   const select = document.getElementById('nodeParent');
   const options = getParentOptions(excludeId);
 
-  select.innerHTML = '<option value="">Нет</option>' + options.map(n =>
+  select.innerHTML = `<option value="">${t('noParent')}</option>` + options.map(n =>
     `<option value="${n.id}">${escapeHtml(n.title)}</option>`
   ).join('');
 }
@@ -1057,13 +1184,12 @@ function roundRect(ctx, x, y, width, height, radius) {
 }
 
 function getStatusLabel(status) {
-  const labels = { idea: 'Идея', in_progress: 'В работе', done: 'Готово' };
-  return labels[status] || status;
+  const map = { idea: 'idea', in_progress: 'inProgress', done: 'done' };
+  return t(map[status]) || status;
 }
 
 function getPriorityLabel(priority) {
-  const labels = { low: 'Низкий', medium: 'Средний', high: 'Высокий' };
-  return labels[priority] || priority;
+  return t(priority) || priority;
 }
 
 function formatDate(dateStr) {
@@ -1199,11 +1325,21 @@ function handleKeyboard(e) {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+  loadTheme();
+  loadLang();
   loadFromStorage();
   pushHistory();
+  applyTranslations();
 
   document.querySelectorAll('.view-btn').forEach(btn => {
     btn.addEventListener('click', () => switchView(btn.dataset.view));
+  });
+
+  document.getElementById('themeToggle').addEventListener('click', toggleTheme);
+  document.getElementById('langSelect').addEventListener('change', (e) => {
+    state.lang = e.target.value;
+    saveLang();
+    applyTranslations();
   });
 
   document.getElementById('addNodeBtn').addEventListener('click', openAddModal);

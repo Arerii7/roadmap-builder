@@ -35,16 +35,29 @@
         </div>
       </div>
       <div class="toolbar-right">
-        <button class="btn btn-icon" id="undoBtn" title="Отменить (Ctrl+Z)">↶</button>
-        <button class="btn btn-icon" id="redoBtn" title="Вернуть (Ctrl+Y)">↷</button>
-        <button class="btn" id="addNodeBtn" title="Добавить задачу">
+        <div class="toolbar-controls">
+          <button class="btn btn-icon" id="undoBtn" title="Undo (Ctrl+Z)">↶</button>
+          <button class="btn btn-icon" id="redoBtn" title="Redo (Ctrl+Y)">↷</button>
+        </div>
+        <div class="toolbar-divider"></div>
+        <button class="btn" id="addNodeBtn" title="Add Task">
           <svg viewBox="0 0 24 24" width="16" height="16"><path fill="currentColor" d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
-          Добавить
+          <span data-i18n="add">Добавить</span>
         </button>
-        <button class="btn btn-secondary" id="exportJsonBtn" title="Экспорт JSON">JSON</button>
-        <button class="btn btn-secondary" id="exportPngBtn" title="Экспорт PNG">PNG</button>
-        <button class="btn btn-secondary" id="importJsonBtn" title="Импорт JSON">Импорт</button>
+        <button class="btn btn-secondary" id="exportJsonBtn" title="Export JSON">JSON</button>
+        <button class="btn btn-secondary" id="exportPngBtn" title="Export PNG">PNG</button>
+        <button class="btn btn-secondary" id="importJsonBtn" title="Import JSON">Импорт</button>
         <input type="file" id="importFileInput" accept=".json" style="display:none">
+        <div class="toolbar-divider"></div>
+        <div class="theme-toggle">
+          <button class="btn btn-icon theme-btn" id="themeToggle" title="Toggle theme">◐</button>
+        </div>
+        <div class="lang-select">
+          <select id="langSelect">
+            <option value="ru">RU</option>
+            <option value="en">EN</option>
+          </select>
+        </div>
         <button class="btn btn-icon" id="toggleTodoPanel" title="TODO">☰</button>
       </div>
     </header>
@@ -52,22 +65,22 @@
     <main class="main-content">
       <aside class="sidebar">
         <div class="sidebar-section">
-          <h3>Поиск</h3>
+          <h3 data-i18n="search">Поиск</h3>
           <div class="search-box">
-            <input type="text" id="searchInput" placeholder="Поиск задач...">
+            <input type="text" id="searchInput" data-i18n-placeholder="search" placeholder="Поиск задач...">
           </div>
           <div class="filter-row">
             <select id="filterStatus">
-              <option value="">Все статусы</option>
-              <option value="idea">Идея</option>
-              <option value="in_progress">В работе</option>
-              <option value="done">Готово</option>
+              <option value="" data-i18n="allStatuses">Все статусы</option>
+              <option value="idea" data-i18n="idea">Идея</option>
+              <option value="in_progress" data-i18n="inProgress">В работе</option>
+              <option value="done" data-i18n="done">Готово</option>
             </select>
             <select id="filterPriority">
-              <option value="">Все приоритеты</option>
-              <option value="low">Низкий</option>
-              <option value="medium">Средний</option>
-              <option value="high">Высокий</option>
+              <option value="" data-i18n="allPriorities">Все приоритеты</option>
+              <option value="low" data-i18n="low">Низкий</option>
+              <option value="medium" data-i18n="medium">Средний</option>
+              <option value="high" data-i18n="high">Высокий</option>
             </select>
           </div>
         </div>
@@ -78,7 +91,7 @@
         <div class="sidebar-section">
           <h3>Свойства</h3>
           <div id="nodeProperties" class="properties-panel">
-            <p class="empty-state">Выберите задачу</p>
+            <p class="empty-state" data-i18n="selectTask">Выберите задачу</p>
           </div>
         </div>
       </aside>
@@ -93,11 +106,11 @@
       <aside class="sidebar-right" id="todoPanel">
         <div class="sidebar-section">
           <div class="todo-header">
-            <h3>TODO</h3>
+            <h3 data-i18n="todoTitle">TODO</h3>
             <button class="btn btn-small" id="addTodoBtn">+</button>
           </div>
           <div class="todo-input-row" id="todoInputRow" style="display:none">
-            <input type="text" id="todoInput" placeholder="Новая задача...">
+            <input type="text" id="todoInput" data-i18n-placeholder="add" placeholder="Новая задача...">
           </div>
         </div>
         <div class="sidebar-section">
@@ -109,68 +122,68 @@
 
   <div id="modal" class="modal hidden">
     <div class="modal-content">
-      <h2 id="modalTitle">Новая задача</h2>
+      <h2 id="modalTitle" data-i18n="newTask">Новая задача</h2>
       <form id="nodeForm">
         <input type="hidden" id="nodeId">
         <div class="form-group">
-          <label for="nodeTitle">Название</label>
+          <label for="nodeTitle" data-i18n="title">Название</label>
           <input type="text" id="nodeTitle" required>
         </div>
         <div class="form-group">
-          <label for="nodeDescription">Описание</label>
+          <label for="nodeDescription" data-i18n="description">Описание</label>
           <textarea id="nodeDescription" rows="3"></textarea>
         </div>
         <div class="form-row">
           <div class="form-group">
-            <label for="nodeStatus">Статус</label>
+            <label for="nodeStatus" data-i18n="status">Статус</label>
             <select id="nodeStatus">
-              <option value="idea">Идея</option>
-              <option value="in_progress">В работе</option>
-              <option value="done">Готово</option>
+              <option value="idea" data-i18n="idea">Идея</option>
+              <option value="in_progress" data-i18n="inProgress">В работе</option>
+              <option value="done" data-i18n="done">Готово</option>
             </select>
           </div>
           <div class="form-group">
-            <label for="nodePriority">Приоритет</label>
+            <label for="nodePriority" data-i18n="priority">Приоритет</label>
             <select id="nodePriority">
-              <option value="low">Низкий</option>
-              <option value="medium">Средний</option>
-              <option value="high">Высокий</option>
+              <option value="low" data-i18n="low">Низкий</option>
+              <option value="medium" data-i18n="medium">Средний</option>
+              <option value="high" data-i18n="high">Высокий</option>
             </select>
           </div>
         </div>
         <div class="form-row">
           <div class="form-group">
-            <label for="nodeStartDate">Дата начала</label>
+            <label for="nodeStartDate" data-i18n="startDate">Дата начала</label>
             <input type="date" id="nodeStartDate">
           </div>
           <div class="form-group">
-            <label for="nodeEndDate">Дата окончания</label>
+            <label for="nodeEndDate" data-i18n="endDate">Дата окончания</label>
             <input type="date" id="nodeEndDate">
           </div>
         </div>
         <div class="form-group">
-          <label for="nodeProgress">Прогресс (%)</label>
+          <label for="nodeProgress" data-i18n="progress">Прогресс (%)</label>
           <input type="range" id="nodeProgress" min="0" max="100" value="0">
           <span id="progressValue">0%</span>
         </div>
         <div class="form-group">
-          <label for="nodeTags">Теги</label>
+          <label for="nodeTags" data-i18n="tags">Теги</label>
           <input type="text" id="nodeTags" placeholder="тег1, тег2, тег3">
         </div>
         <div class="form-group">
-          <label for="nodeParent">Родительская задача</label>
+          <label for="nodeParent" data-i18n="parent">Родительская задача</label>
           <select id="nodeParent">
-            <option value="">Нет</option>
+            <option value="" data-i18n="noParent">Нет</option>
           </select>
         </div>
         <div class="form-group">
-          <label>Подзадачи</label>
+          <label data-i18n="subtasks">Подзадачи</label>
           <div id="subtasksList" class="subtasks-list"></div>
-          <button type="button" class="btn btn-small btn-secondary" id="addSubtaskBtn">+ Добавить подзадачу</button>
+          <button type="button" class="btn btn-small btn-secondary" id="addSubtaskBtn" data-i18n="addSubtask">+ Добавить подзадачу</button>
         </div>
         <div class="form-actions">
-          <button type="button" class="btn btn-secondary" id="cancelNodeBtn">Отмена</button>
-          <button type="submit" class="btn">Сохранить</button>
+          <button type="button" class="btn btn-secondary" id="cancelNodeBtn" data-i18n="cancel">Отмена</button>
+          <button type="submit" class="btn" data-i18n="save">Сохранить</button>
         </div>
       </form>
     </div>
