@@ -1016,7 +1016,7 @@ body {
   padding: 18px;
   background: var(--card-bg);
   border-radius: 14px;
-  cursor: pointer;
+  cursor: grab;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   border: 2px solid transparent;
 }
@@ -1025,6 +1025,16 @@ body {
   transform: translateY(-4px) scale(1.02);
   border-color: var(--accent);
   box-shadow: 0 12px 24px var(--shadow);
+}
+
+.kanban-card.dragging {
+  opacity: 0.5;
+  transform: rotate(3deg);
+}
+
+.kanban-column.drag-over {
+  background: var(--bg-tertiary);
+  border: 2px dashed var(--accent);
 }
 
 .gantt-view {
