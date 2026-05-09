@@ -618,7 +618,7 @@ function renderPropertiesPanel() {
     </div>
     ${node.tags.length ? `<div class="property-row">
       <span class="property-label">Теги</span>
-      <span class="property-value">${node.tags.join(', ')}</span>
+      <span class="property-value">${node.tags.map(t => escapeHtml(t)).join(', ')}</span>
     </div>` : ''}
     ${node.parentId ? `<div class="property-row">
       <span class="property-label">Родитель</span>
