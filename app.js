@@ -795,14 +795,14 @@ function renderKanbanView() {
     const nodesInCol = getFilteredNodes().filter(n => n.status === col.id);
 
     container.innerHTML += `
-      <div class="kanban-column">
+      <div class="kanban-column" data-status="${col.id}">
         <div class="kanban-column-header">
           <span class="kanban-column-title">${col.title}</span>
           <span class="kanban-count">${nodesInCol.length}</span>
         </div>
-        <div class="kanban-cards">
+        <div class="kanban-cards" data-status="${col.id}">
           ${nodesInCol.map(node => `
-            <div class="kanban-card" data-id="${node.id}">
+            <div class="kanban-card" data-id="${node.id}" draggable="true">
               <div class="node-title">${escapeHtml(node.title)}</div>
               ${node.description ? `<div class="node-description">${escapeHtml(node.description)}</div>` : ''}
               <div class="node-meta">
@@ -819,8 +819,65 @@ function renderKanbanView() {
 
   container.innerHTML += '</div>';
 
+  setupKanbanDragDrop();
   container.querySelectorAll('.kanban-card').forEach(card => {
     card.addEventListener('click', () => selectNode(card.dataset.id));
+  });
+}
+
+function setupKanbanDragDrop() {
+  const container = document.getElementById('nodesContainer');
+  
+  container.querySelectorAll('.kanban-card').forEach(card => {
+    card.addEventListener('dragstart', (e) => {
+      e.dataTransfer.setData('text/plain', card.dataset.id);
+      card.classList.add('dragging');
+    });
+    
+    card.addEventListener('dragend', () => {
+      card.classList.remove('dragging');
+      container.querySelectorAll('.kanban-column').forEach(col => {
+        col.classList.remove('drag-over');
+      });
+    });
+  });
+
+  container.querySelectorAll('.kanban-column').forEach(column => {
+    column.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      column.classList.add('drag-over');
+    });
+    
+    column.addEventListener('dragleave', () => {
+      column.classList.remove('drag-over');
+    });
+    
+    column.addEventListener('drop', (e) => {
+      e.preventDefault();
+      column.classList.remove('drag-over');
+      const nodeId = e.dataTransfer.getData('text/plain');
+      const newStatus = column.dataset.status;
+      const node = getNodeById(nodeId);
+      if (node && node.status !== newStatus) {
+        updateNode(nodeId, { status: newStatus });
+      }
+    });
+  });
+
+  container.querySelectorAll('.kanban-cards').forEach(cardsContainer => {
+    cardsContainer.addEventListener('dragover', (e) => {
+      e.preventDefault();
+    });
+    
+    cardsContainer.addEventListener('drop', (e) => {
+      e.preventDefault();
+      const nodeId = e.dataTransfer.getData('text/plain');
+      const newStatus = cardsContainer.dataset.status;
+      const node = getNodeById(nodeId);
+      if (node && node.status !== newStatus) {
+        updateNode(nodeId, { status: newStatus });
+      }
+    });
   });
 }
 
