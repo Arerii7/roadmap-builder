@@ -560,7 +560,24 @@ function getFilteredNodes() {
   });
 }
 
+function renderNodeList() {
+  const container = document.getElementById('nodeList');
+  const filtered = getFilteredNodes();
 
+  container.innerHTML = filtered.map(node => `
+    <div class="node-item ${state.selectedNodeId === node.id ? 'selected' : ''}" data-id="${node.id}">
+      <div class="node-item-title">${escapeHtml(node.title)}</div>
+      <div class="node-item-meta">
+        <span class="status-badge status-${node.status}">${getStatusLabel(node.status)}</span>
+        <span class="priority-badge priority-${node.priority}"></span>
+      </div>
+    </div>
+  `).join('');
+
+  container.querySelectorAll('.node-item').forEach(item => {
+    item.addEventListener('click', () => selectNode(item.dataset.id));
+  });
+}
 
 function renderPropertiesPanel() {
   const container = document.getElementById('nodeProperties');
