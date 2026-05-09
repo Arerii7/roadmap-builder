@@ -116,10 +116,6 @@
   justify-content: center;
 }
 
-.btn-small {
-  padding: 6px 12px;
-  font-size: 12px;
-}
 
 :root {
   --bg-primary: #1a1a2e;
