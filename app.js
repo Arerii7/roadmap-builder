@@ -7,6 +7,35 @@ const UI_STATE_KEY = 'roadmap-ui-state';
 const PROJECTS_KEY = 'roadmap-projects';
 const ACTIVE_PROJECT_KEY = 'roadmap-active-project';
 
+const MAX_HISTORY_SIZE = 50;
+const MAX_IMPORT_NODES = 1000;
+const MIN_ZOOM = 0.25;
+const MAX_ZOOM = 2;
+const DEFAULT_NODE_X = 100;
+const RANDOM_POSITION_RANGE = 200;
+const DUE_SOON_MS = 3 * 24 * 60 * 60 * 1000;
+const SAVE_DEBOUNCE_MS = 100;
+const FILTER_DEBOUNCE_MS = 200;
+
+function debounce(fn, delay) {
+  let timeout;
+  return (...args) => {
+    clearTimeout(timeout);
+    timeout = setTimeout(() => fn(...args), delay);
+  };
+}
+
+const nodeIndex = new Map();
+
+function rebuildNodeIndex() {
+  nodeIndex.clear();
+  state.nodes.forEach(node => nodeIndex.set(node.id, node));
+}
+
+function getNodeById(id) {
+  return nodeIndex.get(id);
+}
+
 const translations = {
   ru: {
     add: 'Добавить',
@@ -241,6 +270,7 @@ function loadActiveProject() {
     state.nodes = [];
     state.todos = [];
   }
+  rebuildNodeIndex();
   renderAll();
 }
 
@@ -324,11 +354,11 @@ function updateProjectDropdown() {
       <span class="project-item-name">${escapeHtml(project.name)}</span>
       <div class="project-item-actions">
         <button class="project-item-btn" title="${t('editProject')}"
-                onclick="event.stopPropagation(); editProject('${project.id}')">
+                onclick="event.stopPropagation(); editProject('${escapeHtml(project.id)}')">
           <svg viewBox="0 0 24 24" width="14" height="14"><path fill="currentColor" d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
         </button>
         <button class="project-item-btn" title="${t('deleteProject')}"
-                onclick="event.stopPropagation(); deleteProject('${project.id}')">
+                onclick="event.stopPropagation(); deleteProject('${escapeHtml(project.id)}')">
           <svg viewBox="0 0 24 24" width="14" height="14"><path fill="currentColor" d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
         </button>
       </div>
@@ -351,10 +381,10 @@ function editProject(projectId) {
   }
 }
 
+const escapeHtmlEl = document.createElement('div');
 function escapeHtml(text) {
-  const div = document.createElement('div');
-  div.textContent = text;
-  return div.innerHTML;
+  escapeHtmlEl.textContent = text || '';
+  return escapeHtmlEl.innerHTML;
 }
 
 function loadFromStorage() {
@@ -399,7 +429,7 @@ function saveToStorage() {
       project.nodes = state.nodes;
       saveProjects();
     }
-  }, 100);
+  }, SAVE_DEBOUNCE_MS);
 }
 
 function saveTodos() {
@@ -431,6 +461,7 @@ function undo() {
   if (state.historyIndex > 0) {
     state.historyIndex--;
     state.nodes = JSON.parse(state.history[state.historyIndex]);
+    rebuildNodeIndex();
     saveToStorage();
     renderAll();
     updateUndoRedoButtons();
@@ -441,6 +472,7 @@ function redo() {
   if (state.historyIndex < state.history.length - 1) {
     state.historyIndex++;
     state.nodes = JSON.parse(state.history[state.historyIndex]);
+    rebuildNodeIndex();
     saveToStorage();
     renderAll();
     updateUndoRedoButtons();
@@ -450,10 +482,6 @@ function redo() {
 function updateUndoRedoButtons() {
   document.getElementById('undoBtn').disabled = state.historyIndex <= 0;
   document.getElementById('redoBtn').disabled = state.historyIndex >= state.history.length - 1;
-}
-
-function getNodeById(id) {
-  return state.nodes.find(n => n.id === id);
 }
 
 function getChildNodes(parentId) {
@@ -466,6 +494,7 @@ function getParentOptions(excludeId = null) {
 
 function createNode(data) {
   pushHistory();
+  const progress = typeof data.progress === 'number' ? Math.min(100, Math.max(0, data.progress)) : 0;
   const node = {
     id: generateId(),
     title: data.title || 'Новая задача',
@@ -475,7 +504,7 @@ function createNode(data) {
     startDate: data.startDate || '',
     endDate: data.endDate || '',
     parentId: data.parentId || '',
-    progress: data.progress || 0,
+    progress: progress,
     tags: data.tags || [],
     subtasks: data.subtasks || [],
     x: data.x || 100 + Math.random() * 200,
@@ -483,6 +512,7 @@ function createNode(data) {
     createdAt: Date.now()
   };
   state.nodes.push(node);
+  nodeIndex.set(node.id, node);
   saveToStorage();
   renderAll();
   return node;
@@ -506,6 +536,7 @@ function deleteNode(id) {
   if (state.selectedNodeId === id) {
     state.selectedNodeId = null;
   }
+  rebuildNodeIndex();
   saveToStorage();
   renderAll();
 }
@@ -1263,6 +1294,9 @@ function handleFormSubmit(e) {
     if (node) subtasks = node.subtasks || [];
   }
 
+  const rawProgress = parseInt(document.getElementById('nodeProgress').value) || 0;
+  const progress = Math.min(100, Math.max(0, rawProgress));
+  
   const data = {
     title: document.getElementById('nodeTitle').value,
     description: document.getElementById('nodeDescription').value,
@@ -1271,7 +1305,7 @@ function handleFormSubmit(e) {
     startDate: document.getElementById('nodeStartDate').value,
     endDate: document.getElementById('nodeEndDate').value,
     parentId: document.getElementById('nodeParent').value,
-    progress: parseInt(document.getElementById('nodeProgress').value) || 0,
+    progress: progress,
     tags: tags,
     subtasks: subtasks
   };
@@ -1331,19 +1365,88 @@ function exportJson() {
   URL.revokeObjectURL(url);
 }
 
+function sanitizeNode(node) {
+  const dangerousProps = ['__proto__', 'constructor', 'prototype'];
+  const sanitized = {};
+  
+  for (const key of dangerousProps) {
+    delete node[key];
+  }
+  
+  for (const [key, value] of Object.entries(node)) {
+    if (dangerousProps.includes(key)) continue;
+    if (typeof value === 'object' && value !== null) {
+      sanitized[key] = Array.isArray(value) 
+        ? value.map(v => typeof v === 'object' ? sanitizeNode(v) : v)
+        : sanitizeNode(value);
+    } else {
+      sanitized[key] = value;
+    }
+  }
+  
+  return sanitized;
+}
+
+function validateNode(node) {
+  const allowedKeys = ['id', 'title', 'description', 'status', 'priority', 'startDate', 'endDate', 'parentId', 'progress', 'tags', 'subtasks', 'x', 'y', 'createdAt'];
+  const allowedStatuses = ['idea', 'in_progress', 'done'];
+  const allowedPriorities = ['low', 'medium', 'high'];
+  
+  for (const key of Object.keys(node)) {
+    if (!allowedKeys.includes(key)) return false;
+  }
+  
+  if (node.status && !allowedStatuses.includes(node.status)) return false;
+  if (node.priority && !allowedPriorities.includes(node.priority)) return false;
+  if (node.progress !== undefined && (typeof node.progress !== 'number' || node.progress < 0 || node.progress > 100)) return false;
+  if (node.x !== undefined && typeof node.x !== 'number') return false;
+  if (node.y !== undefined && typeof node.y !== 'number') return false;
+  
+  return true;
+}
+
 function importJson(file) {
   const reader = new FileReader();
   reader.onload = (e) => {
     try {
       const data = JSON.parse(e.target.result);
       if (Array.isArray(data)) {
+        const maxNodes = 1000;
+        if (data.length > maxNodes) {
+          alert(`Слишком много задач. Максимум: ${maxNodes}`);
+          return;
+        }
+        
         pushHistory();
-        state.nodes = data;
-        state.nodes.forEach(node => {
-          if (!node.subtasks) node.subtasks = [];
-          if (!node.tags) node.tags = [];
-          if (node.progress === undefined) node.progress = 0;
-        });
+        
+        state.nodes = data.map(node => {
+          const sanitized = sanitizeNode(node);
+          if (!validateNode(sanitized)) {
+            console.warn('Invalid node skipped:', node);
+            return null;
+          }
+          return {
+            id: String(sanitized.id || generateId()),
+            title: escapeHtml(String(sanitized.title || 'Untitled')),
+            description: escapeHtml(String(sanitized.description || '')),
+            status: sanitized.status || 'idea',
+            priority: sanitized.priority || 'medium',
+            startDate: String(sanitized.startDate || ''),
+            endDate: String(sanitized.endDate || ''),
+            parentId: String(sanitized.parentId || ''),
+            progress: typeof sanitized.progress === 'number' ? Math.min(100, Math.max(0, sanitized.progress)) : 0,
+            tags: Array.isArray(sanitized.tags) ? sanitized.tags.map(t => escapeHtml(String(t))) : [],
+            subtasks: Array.isArray(sanitized.subtasks) ? sanitized.subtasks.map(s => ({
+              text: escapeHtml(String(s.text || '')),
+              done: Boolean(s.done)
+            })) : [],
+            x: typeof sanitized.x === 'number' ? sanitized.x : 100 + Math.random() * 200,
+            y: typeof sanitized.y === 'number' ? sanitized.y : 100 + Math.random() * 200,
+            createdAt: sanitized.createdAt || Date.now()
+          };
+        }).filter(n => n !== null);
+        
+        rebuildNodeIndex();
         saveToStorage();
         renderAll();
       }
@@ -1462,13 +1565,7 @@ function formatDate(dateStr) {
   if (!dateStr) return '';
   const date = new Date(dateStr);
   return date.toLocaleDateString('ru-RU', { day: '2-digit', month: 'short' });
-}
 
-function escapeHtml(text) {
-  const div = document.createElement('div');
-  div.textContent = text || '';
-  return div.innerHTML;
-}
 
 function showContextMenu(x, y, nodeId) {
   state.contextMenuNode = nodeId;
@@ -1657,19 +1754,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
   document.getElementById('addSubtaskBtn').addEventListener('click', addSubtask);
 
+  const debouncedRenderAll = debounce(() => renderAll(), FILTER_DEBOUNCE_MS);
+
   document.getElementById('searchInput').addEventListener('input', (e) => {
     state.filters.search = e.target.value;
-    renderAll();
+    debouncedRenderAll();
   });
 
   document.getElementById('filterStatus').addEventListener('change', (e) => {
     state.filters.status = e.target.value;
-    renderAll();
+    debouncedRenderAll();
   });
 
   document.getElementById('filterPriority').addEventListener('change', (e) => {
     state.filters.priority = e.target.value;
-    renderAll();
+    debouncedRenderAll();
   });
 
   document.getElementById('zoomIn').addEventListener('click', () => setZoom(state.zoom + 0.1));
